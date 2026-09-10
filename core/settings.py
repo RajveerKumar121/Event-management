@@ -47,6 +47,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -121,10 +122,12 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # The directory where development static files live
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else []
 
 # The absolute directory where collectstatic gathers files for production
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+
 
 # Enable WhiteNoise storage for compressed, cached assets
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
