@@ -1,0 +1,21 @@
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local SQLite database (if generated)
+*.sqlite3
+db.sqlite3
+
+# Collected static assets
+staticfiles/
+
+# Local secrets & system files
+.env
+.DS_Store
+Thumbs.db
