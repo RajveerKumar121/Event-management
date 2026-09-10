@@ -1,0 +1,76 @@
+{% extends 'base.html' %} {% block title %}{{ event.title }} — EventHub{%
+endblock %} {% block content %}
+<div class="detail-view">
+  <div class="detail-header">
+    <div class="card-tag-wrapper">
+      <span class="badge badge-accent"
+        >{{ event.category.name|default:"General" }}</span
+      >
+      <span class="badge" id="capacity-indicator">
+        <span id="attendee-count">{{ event.registered_count }}</span> / {{
+        event.capacity }} Registered
+      </span>
+    </div>
+    <h1 class="hero-title" style="text-align: left; margin-top: 0.75rem">
+      {{ event.title }}
+    </h1>
+  </div>
+
+  <div class="detail-meta-grid">
+    <div class="meta-item">
+      <h4>Location</h4>
+      <p>{{ event.location }}</p>
+    </div>
+    <div class="meta-item">
+      <h4>Starts At</h4>
+      <p>{{ event.start_time|date:"M d, Y • h:i A" }}</p>
+    </div>
+    <div class="meta-item">
+      <h4>Ends At</h4>
+      <p>{{ event.end_time|date:"M d, Y • h:i A" }}</p>
+    </div>
+    <div class="meta-item">
+      <h4>Host</h4>
+      <p>@{{ event.organizer.username }}</p>
+    </div>
+  </div>
+
+  <div class="detail-content">
+    <h3 style="color: var(--text-primary); margin-bottom: 0.75rem">
+      About this Event
+    </h3>
+    <p>{{ event.description|linebreaks }}</p>
+  </div>
+
+  <div class="detail-action-bar">
+    {% if user.is_authenticated %}
+    <button
+      id="rsvp-button"
+      class="btn btn-block {% if user_has_rsvped %}btn-danger{% else %}btn-primary{% endif %}"
+      data-url="{% url 'toggle_rsvp' event.pk %}"
+      data-csrf="{{ csrf_token }}"
+      {%
+      if
+      event.is_full
+      and
+      not
+      user_has_rsvped
+      %}disabled
+      style="opacity: 0.5; cursor: not-allowed"
+      {%
+      endif
+      %}
+    >
+      {% if user_has_rsvped %} Cancel RSVP {% elif event.is_full %} Event Full
+      {% else %} Register / RSVP {% endif %}
+    </button>
+    {% else %}
+    <a
+      href="/admin/login/?next={{ request.path }}"
+      class="btn btn-primary btn-block"
+      >Sign in to RSVP</a
+    >
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
