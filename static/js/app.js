@@ -1,27 +1,20 @@
-// EventHub Interactive Client Controller
-
 document.addEventListener('DOMContentLoaded', () => {
-    const rsvpBtn = document.getElementById('rsvp-button');
+    const rsvpBtn = document.getElementById('rsvp-btn');
 
     if (!rsvpBtn) return;
 
-    rsvpBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
+    rsvpBtn.addEventListener('click', async () => {
+        const eventId = rsvpBtn.dataset.eventId;
+        const csrfToken = rsvpBtn.dataset.csrf;
 
-        const targetUrl = rsvpBtn.getAttribute('data-url');
-        const csrfToken = rsvpBtn.getAttribute('data-csrf');
-        const attendeeCountEl = document.getElementById('attendee-count');
-
-        // UI state: disable button during flight
         rsvpBtn.disabled = true;
-        const initialText = rsvpBtn.textContent;
+        const originalText = rsvpBtn.textContent;
         rsvpBtn.textContent = 'Processing...';
 
         try {
-            const response = await fetch(targetUrl, {
+            const response = await fetch(`/event/${eventId}/rsvp/`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest',
                 },
@@ -30,38 +23,27 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || 'Action could not be completed.');
+                throw new Error(data.error || 'Action could not be completed.');
             }
 
-            // Update attendee counter
-            if (attendeeCountEl && typeof data.attendee_count !== 'undefined') {
-                attendeeCountEl.textContent = data.attendee_count;
-            }
+            document.getElementById('rsvp-count').textContent = data.count;
 
-            // Toggle styles & text based on response
-            if (data.action === 'registered') {
+            if (data.status === 'registered') {
                 rsvpBtn.textContent = 'Cancel RSVP';
                 rsvpBtn.classList.remove('btn-primary');
                 rsvpBtn.classList.add('btn-danger');
-            } else if (data.action === 'cancelled') {
-                rsvpBtn.textContent = 'Register / RSVP';
+            } else if (data.status === 'unregistered') {
+                rsvpBtn.textContent = 'RSVP Now';
                 rsvpBtn.classList.remove('btn-danger');
                 rsvpBtn.classList.add('btn-primary');
             }
 
-            // Handle capacity exhaustion state
-            if (data.is_full && data.action !== 'registered') {
-                rsvpBtn.textContent = 'Event Full';
-                rsvpBtn.disabled = true;
-                rsvpBtn.style.opacity = '0.5';
-                rsvpBtn.style.cursor = 'not-allowed';
-            } else {
-                rsvpBtn.disabled = false;
-            }
-        } catch (err) {
-            console.error('[EventHub] RSVP error:', err);
-            alert(err.message || 'An unexpected error occurred. Please try again.');
-            rsvpBtn.textContent = initialText;
+            rsvpBtn.disabled = false;
+
+        } catch (error) {
+            console.error('[EventHub] RSVP error:', error);
+            alert(error.message);
+            rsvpBtn.textContent = originalText;
             rsvpBtn.disabled = false;
         }
     });
